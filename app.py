@@ -491,24 +491,22 @@ else:
                             f"Predicted {target}": round(pred_value, 2)
                         }
 
-                        # Add over/under probabilities and odds
+                        # Add over/under odds only, grouped: all overs first, then unders
                         for threshold in thresholds:
                             threshold_str = str(threshold)
                             if threshold_str in threshold_data:
                                 # Over
                                 over_data = threshold_data[threshold_str].get("over", {})
-                                over_prob = over_data.get("probability", 0)
                                 over_odds = over_data.get("fair_odds", 999.99)
+                                player_row[f"Over {threshold} Odds"] = format_odds(over_odds)
 
+                        # Add unders after overs
+                        for threshold in thresholds:
+                            threshold_str = str(threshold)
+                            if threshold_str in threshold_data:
                                 # Under
                                 under_data = threshold_data[threshold_str].get("under", {})
-                                under_prob = under_data.get("probability", 0)
                                 under_odds = under_data.get("fair_odds", 999.99)
-
-                                # Add to row
-                                player_row[f"Over {threshold} Prob"] = f"{over_prob:.1%}"
-                                player_row[f"Over {threshold} Odds"] = format_odds(over_odds)
-                                player_row[f"Under {threshold} Prob"] = f"{under_prob:.1%}"
                                 player_row[f"Under {threshold} Odds"] = format_odds(under_odds)
 
                         rows.append(player_row)
