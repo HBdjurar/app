@@ -112,6 +112,19 @@ else:
             st.error(f"Export Error: {str(e)}")
             return None
 
+    # --- Callbacks for team selection ---
+    def on_home_team_change():
+        team = st.session_state.home_team_select
+        st.session_state.home_players_selected = fetch_common_xi(team)
+        positions = fetch_player_positions(st.session_state.home_players_selected)
+        st.session_state.player_positions.update(positions)
+
+    def on_away_team_change():
+        team = st.session_state.away_team_select
+        st.session_state.away_players_selected = fetch_common_xi(team)
+        positions = fetch_player_positions(st.session_state.away_players_selected)
+        st.session_state.player_positions.update(positions)
+
     # --- Fetch dropdown data once ---
     if 'dropdown_data' not in st.session_state:
         st.session_state.dropdown_data = {
@@ -122,16 +135,15 @@ else:
             'captains': fetch_api_data("captains").get("captains", [])
         }
 
-    # --- Initialize players on team change ---
-    if 'previous_home_team' not in st.session_state or st.session_state.previous_home_team != st.session_state.dropdown_data['teams'][0]:
-        st.session_state.previous_home_team = st.session_state.dropdown_data['teams'][0]
-        st.session_state.home_players_selected = fetch_common_xi(st.session_state.previous_home_team)
-        st.session_state.player_positions.update(fetch_player_positions(st.session_state.home_players_selected))
-
-    if 'previous_away_team' not in st.session_state or st.session_state.previous_away_team != st.session_state.dropdown_data['teams'][1]:
-        st.session_state.previous_away_team = st.session_state.dropdown_data['teams'][1]
-        st.session_state.away_players_selected = fetch_common_xi(st.session_state.previous_away_team)
-        st.session_state.player_positions.update(fetch_player_positions(st.session_state.away_players_selected))
+    # --- Initialize session state variables ---
+    if 'player_positions' not in st.session_state:
+        st.session_state.player_positions = {}
+    
+    if 'home_players_selected' not in st.session_state:
+        st.session_state.home_players_selected = []
+    
+    if 'away_players_selected' not in st.session_state:
+        st.session_state.away_players_selected = []
 
     # --- UI Layout ---
     st.title("⚽ Soccer Player Stats Predictor")
@@ -139,9 +151,12 @@ else:
     league = st.sidebar.selectbox("League", st.session_state.dropdown_data['leagues'])
     col1, col2 = st.sidebar.columns(2)
     with col1:
-        home_team = st.selectbox("Home Team", st.session_state.dropdown_data['teams'])
+        home_team = st.selectbox("Home Team", st.session_state.dropdown_data['teams'], 
+                                key="home_team_select", on_change=on_home_team_change)
     with col2:
-        away_team = st.selectbox("Away Team", st.session_state.dropdown_data['teams'], index=1 if len(st.session_state.dropdown_data['teams']) > 1 else 0)
+        away_team = st.selectbox("Away Team", st.session_state.dropdown_data['teams'], 
+                                index=1 if len(st.session_state.dropdown_data['teams']) > 1 else 0,
+                                key="away_team_select", on_change=on_away_team_change)
 
     referee = st.sidebar.selectbox("Referee", st.session_state.dropdown_data['referees'])
 
@@ -160,9 +175,6 @@ else:
         away_captain = st.selectbox("Away Team Captain", st.session_state.dropdown_data['captains'])
 
     match_date = st.sidebar.date_input("Match Date", datetime.date.today() + datetime.timedelta(days=1))
-
-    if 'player_positions' not in st.session_state:
-        st.session_state.player_positions = {}
 
     st.header("Player Selection")
     home_team_players = fetch_team_players(home_team)
