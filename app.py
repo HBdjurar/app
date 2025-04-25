@@ -563,3 +563,4 @@ else:
     # --- Footer ---
     st.markdown("---")
     st.markdown("⚽ Soccer Player Stats Predictor")
+
