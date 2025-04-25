@@ -112,18 +112,41 @@ else:
             st.error(f"Export Error: {str(e)}")
             return None
 
+    # --- Fetch dropdown data once ---
+    if 'dropdown_data' not in st.session_state:
+        st.session_state.dropdown_data = {
+            'leagues': fetch_api_data("leagues").get("leagues", []),
+            'teams': fetch_api_data("teams").get("teams", []),
+            'referees': fetch_api_data("referees").get("referees", []),
+            'managers': fetch_api_data("managers").get("managers", []),
+            'captains': fetch_api_data("captains").get("captains", [])
+        }
+
     # --- UI Layout ---
     st.title("⚽ Soccer Player Stats Predictor")
 
-    leagues_data = fetch_api_data("leagues")
-    teams_data = fetch_api_data("teams")
-
-    league = st.sidebar.selectbox("League", leagues_data.get("leagues", []))
+    league = st.sidebar.selectbox("League", st.session_state.dropdown_data['leagues'])
     col1, col2 = st.sidebar.columns(2)
     with col1:
-        home_team = st.selectbox("Home Team", teams_data.get("teams", []))
+        home_team = st.selectbox("Home Team", st.session_state.dropdown_data['teams'])
     with col2:
-        away_team = st.selectbox("Away Team", teams_data.get("teams", []))
+        away_team = st.selectbox("Away Team", st.session_state.dropdown_data['teams'], index=1 if len(st.session_state.dropdown_data['teams']) > 1 else 0)
+
+    referee = st.sidebar.selectbox("Referee", st.session_state.dropdown_data['referees'])
+
+    st.sidebar.subheader("Team Management")
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        home_manager = st.selectbox("Home Team Manager", st.session_state.dropdown_data['managers'])
+    with col2:
+        away_manager = st.selectbox("Away Team Manager", st.session_state.dropdown_data['managers'])
+
+    st.sidebar.subheader("Team Captains")
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        home_captain = st.selectbox("Home Team Captain", st.session_state.dropdown_data['captains'])
+    with col2:
+        away_captain = st.selectbox("Away Team Captain", st.session_state.dropdown_data['captains'])
 
     match_date = st.sidebar.date_input("Match Date", datetime.date.today() + datetime.timedelta(days=1))
 
@@ -185,11 +208,11 @@ else:
             "home_team": home_team,
             "away_team": away_team,
             "league": league,
-            "referee": "",
-            "home_manager": "",
-            "away_manager": "",
-            "home_captain": "",
-            "away_captain": "",
+            "referee": referee,
+            "home_manager": home_manager,
+            "away_manager": away_manager,
+            "home_captain": home_captain,
+            "away_captain": away_captain,
             "datetime": match_date.strftime("%Y-%m-%d"),
             "predict_players": {
                 "home": st.session_state.home_players_selected,
