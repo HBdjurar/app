@@ -122,6 +122,17 @@ else:
             'captains': fetch_api_data("captains").get("captains", [])
         }
 
+    # --- Initialize players on team change ---
+    if 'previous_home_team' not in st.session_state or st.session_state.previous_home_team != st.session_state.dropdown_data['teams'][0]:
+        st.session_state.previous_home_team = st.session_state.dropdown_data['teams'][0]
+        st.session_state.home_players_selected = fetch_common_xi(st.session_state.previous_home_team)
+        st.session_state.player_positions.update(fetch_player_positions(st.session_state.home_players_selected))
+
+    if 'previous_away_team' not in st.session_state or st.session_state.previous_away_team != st.session_state.dropdown_data['teams'][1]:
+        st.session_state.previous_away_team = st.session_state.dropdown_data['teams'][1]
+        st.session_state.away_players_selected = fetch_common_xi(st.session_state.previous_away_team)
+        st.session_state.player_positions.update(fetch_player_positions(st.session_state.away_players_selected))
+
     # --- UI Layout ---
     st.title("⚽ Soccer Player Stats Predictor")
 
@@ -150,10 +161,6 @@ else:
 
     match_date = st.sidebar.date_input("Match Date", datetime.date.today() + datetime.timedelta(days=1))
 
-    if 'home_players_selected' not in st.session_state:
-        st.session_state.home_players_selected = fetch_common_xi(home_team)
-    if 'away_players_selected' not in st.session_state:
-        st.session_state.away_players_selected = fetch_common_xi(away_team)
     if 'player_positions' not in st.session_state:
         st.session_state.player_positions = {}
 
@@ -177,6 +184,16 @@ else:
                 st.session_state.home_players_selected.pop(i)
                 st.rerun()
 
+        available_home_players = [p for p in home_team_players if p not in st.session_state.home_players_selected]
+        home_cols = st.columns([3, 1])
+        selected_home_player = home_cols[0].selectbox("Select Player", available_home_players, key="home_player_select")
+        if home_cols[1].button("Add", key="add_home_player"):
+            if selected_home_player:
+                st.session_state.home_players_selected.append(selected_home_player)
+                pos = fetch_player_info(selected_home_player).get("position", "CM")
+                st.session_state.player_positions[selected_home_player] = pos
+                st.rerun()
+
         if st.button("Load All Home Players"):
             st.session_state.home_players_selected = home_team_players
             positions = fetch_player_positions(home_team_players)
@@ -195,6 +212,16 @@ else:
             st.session_state.player_positions[player] = new_pos
             if cols[2].button("Remove", key=f"remove_away_{i}"):
                 st.session_state.away_players_selected.pop(i)
+                st.rerun()
+
+        available_away_players = [p for p in away_team_players if p not in st.session_state.away_players_selected]
+        away_cols = st.columns([3, 1])
+        selected_away_player = away_cols[0].selectbox("Select Player", available_away_players, key="away_player_select")
+        if away_cols[1].button("Add", key="add_away_player"):
+            if selected_away_player:
+                st.session_state.away_players_selected.append(selected_away_player)
+                pos = fetch_player_info(selected_away_player).get("position", "CM")
+                st.session_state.player_positions[selected_away_player] = pos
                 st.rerun()
 
         if st.button("Load All Away Players"):
