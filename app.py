@@ -376,6 +376,19 @@ else:
             st.session_state.home_players_selected = []
             st.rerun()
 
+        if st.button("Common XI (Home)", key="common_xi_home"):
+            response = fetch_api_data(f"common_xi/{home_team}")
+            if "players" in response:
+                st.session_state.home_players_selected = response["players"]
+
+                # Fetch positions for these players
+                if response["players"]:
+                    positions = fetch_player_positions(response["players"])
+                    for player, position in positions.items():
+                        st.session_state.player_positions[player] = position
+
+                st.rerun()
+
     # Away team player selection
     with col2:
         st.subheader(f"Away Team: {away_team}")
@@ -436,6 +449,19 @@ else:
         if st.button("Clear All Away Players"):
             st.session_state.away_players_selected = []
             st.rerun()
+
+        if st.button("Common XI (Away)", key="common_xi_away"):
+            response = fetch_api_data(f"common_xi/{away_team}")
+            if "players" in response:
+                st.session_state.away_players_selected = response["players"]
+
+                # Fetch positions for these players
+                if response["players"]:
+                    positions = fetch_player_positions(response["players"])
+                    for player, position in positions.items():
+                        st.session_state.player_positions[player] = position
+
+                st.rerun()
 
     # --- Prediction button ---
     if st.button("Predict Player Stats", type="primary"):
