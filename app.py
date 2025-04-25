@@ -536,4 +536,4 @@ else:
 
     # --- Footer ---
     st.markdown("---")
-    st.markdown("⚽ Soccer Player Stats Predictor | Powered by XGBoost and Poisson Modeling")
+    st.markdown("⚽ Soccer Player Stats Predictor")
