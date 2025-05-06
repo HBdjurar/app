@@ -28,7 +28,7 @@ if not st.session_state.authenticated:
             st.error("Invalid credentials")
 else:
     # --- Config ---
-    API_URL = st.sidebar.text_input("API URL", "http://85.229.213.182:8000")
+    API_URL = st.sidebar.text_input("API URL", "http://85.229.213.182:8888")
     TARGETS = [
         'Goals', 'Assists', 'Shots', 'Shots on Target',
         'Yellow Cards', 'Tackles', 'Fouls Committed'
