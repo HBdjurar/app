@@ -6,6 +6,7 @@ import json
 import datetime
 import io
 
+
 # --- UI Setup ---
 st.set_page_config(
     page_title="Soccer Player Stats Predictor",
